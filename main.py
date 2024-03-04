@@ -11,7 +11,7 @@ from app.eu_scraper import EUClinicalTrialsScraper
 from app.utils import setup_logging
 
 HERE = Path(os.path.abspath(os.path.dirname(__file__)))
-DATA_DIR = HERE.parent / "data"
+DATA_DIR = HERE / "data"
 
 
 def parse_args():
