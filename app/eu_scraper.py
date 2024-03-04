@@ -3,6 +3,8 @@ import logging
 import re
 import requests
 
+import os
+from pathlib import Path
 from app.card_parser import CardParser
 from app.protocol_parser import ProtocolParser
 from app.result_parser import ResultParser
@@ -23,6 +25,9 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"
 }
 
+HERE = Path(os.path.abspath(os.path.dirname(__file__)))
+DATA_DIR = HERE.parent / "data"
+HTML_DIR = DATA_DIR / "html"
 
 class EUClinicalTrialsScraper:
     """
@@ -195,6 +200,7 @@ class EUClinicalTrialsScraper:
         Updates:
             self.results["errors"]: List of error messages encountered during protocol data retrieval.
         """
+        HTML_DIR.mkdir(exist_ok=True, parents=True)
         protocols = []
         for protocol_url in protocols_urls:
             try:
@@ -205,6 +211,10 @@ class EUClinicalTrialsScraper:
                 protocol_parser = ProtocolParser(soup)
                 protocol_data.update(protocol_parser.parse())
                 protocols.append(protocol_data)
+                html_file = HTML_DIR / (protocol_url.replace(BASE_URL, "") + ".html")
+                html_file.parent.mkdir(exist_ok=True, parents=True)
+                with open(str(html_file), "w") as f:
+                    f.write(response.text)
             except Exception as e:
                 self.results["errors"].append(
                     f"Error retrieving protocol data for {protocol_url}: {str(e)}")
